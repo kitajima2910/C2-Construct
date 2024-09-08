@@ -178,12 +178,12 @@ cr.plugins_.PXH_COMMONS = function (runtime) {
         return buttonPressed;
     };
 
-    Cnds.prototype.OnLeftStickMoved = function () {
-        return true;
+    Cnds.prototype.OnLeftStickMoved = function (gamepadIndex) {
+        return this.gamepads[gamepadIndex] && Math.abs(this.gamepads[gamepadIndex].axes[0]) > 0.1 || Math.abs(this.gamepads[gamepadIndex].axes[1]) > 0.1;
     }
 
-    Cnds.prototype.OnRightStickMoved = function () {
-        return true;
+    Cnds.prototype.OnRightStickMoved = function (gamepadIndex) {
+        return this.gamepads[gamepadIndex] && Math.abs(this.gamepads[gamepadIndex].axes[2]) > 0.1 || Math.abs(this.gamepads[gamepadIndex].axes[3]) > 0.1;
     }
     // End: support gamepads
 
