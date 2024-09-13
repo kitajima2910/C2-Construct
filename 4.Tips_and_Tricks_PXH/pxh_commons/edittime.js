@@ -108,8 +108,8 @@ for (var i = 0; i < gamepadIndices.length; i++) {
     AddComboParamOption(gamepadIndices[i]);
 }
 AddComboParam("Gamepad", "Chọn gamepad", 0);
-AddComboParamOption("<");
-AddComboParamOption(">");
+AddComboParamOption("< (Trái)");
+AddComboParamOption("> (Phải)");
 AddComboParam("Dấu", "Chọn dấu", 0);
 AddNumberParam("Giá trị X", "X");
 AddCondition(5, cf_trigger, "On left stick - X", "Gamepad", "On Left stick moved (X) on {0} {1} {2}", "Kích hoạt left stick di chuyển X", "OnLeftStickXMoved");
@@ -119,11 +119,11 @@ for (var i = 0; i < gamepadIndices.length; i++) {
     AddComboParamOption(gamepadIndices[i]);
 }
 AddComboParam("Gamepad", "Chọn gamepad", 0);
-AddComboParamOption("<");
-AddComboParamOption(">");
+AddComboParamOption("< (Lên)");
+AddComboParamOption("> (Xuống)");
 AddComboParam("Dấu", "Chọn dấu", 0);
 AddNumberParam("Giá trị Y", "Y");
-AddCondition(5, cf_trigger, "On left stick - Y", "Gamepad", "On Left stick moved (Y) on {0} {1} {2}", "Kích hoạt left stick di chuyển Y", "OnLeftStickYMoved");
+AddCondition(6, cf_trigger, "On left stick - Y", "Gamepad", "On Left stick moved (Y) on {0} {1} {2}", "Kích hoạt left stick di chuyển Y", "OnLeftStickYMoved");
 // End: Left/Right Stick
 // End: support gamepads
 
