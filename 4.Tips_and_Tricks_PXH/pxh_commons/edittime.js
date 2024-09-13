@@ -2,7 +2,7 @@ function GetPluginSettings() {
     return {
         "name": "PXH_COMMONS",				// as appears in 'insert object' dialog, can be changed as long as "id" stays the same
         "id": "PXH_COMMONS",				// this is used to identify this plugin and is saved to the project; never change it
-        "version": "1.0",					// (float in x.y format) Plugin version - C2 shows compatibility warnings based on this
+        "version": "1.1",					// (float in x.y format) Plugin version - C2 shows compatibility warnings based on this
         "description": "Support for C2 by PXH2910",
         "author": "hoai.phamxuan@gameloft.com (Phạm Xuân Hoài)",
         "help url": "https://pxh2910.io.vn",
@@ -103,6 +103,27 @@ for (var i = 0; i < gamepadIndices.length; i++) {
 }
 AddComboParam("Gamepad", "Chọn gamepad", 0);
 AddCondition(4, cf_trigger, "On right stick", "Gamepad", "On Right stick moved on {0}", "Kích hoạt right stick di chuyển", "OnRightStickMoved");
+
+for (var i = 0; i < gamepadIndices.length; i++) {
+    AddComboParamOption(gamepadIndices[i]);
+}
+AddComboParam("Gamepad", "Chọn gamepad", 0);
+AddComboParamOption("<");
+AddComboParamOption(">");
+AddComboParam("Dấu", "Chọn dấu", 0);
+AddNumberParam("Giá trị X", "X");
+AddCondition(5, cf_trigger, "On left stick - X", "Gamepad", "On Left stick moved (X) on {0} {1} {2}", "Kích hoạt left stick di chuyển X", "OnLeftStickXMoved");
+
+
+for (var i = 0; i < gamepadIndices.length; i++) {
+    AddComboParamOption(gamepadIndices[i]);
+}
+AddComboParam("Gamepad", "Chọn gamepad", 0);
+AddComboParamOption("<");
+AddComboParamOption(">");
+AddComboParam("Dấu", "Chọn dấu", 0);
+AddNumberParam("Giá trị Y", "Y");
+AddCondition(5, cf_trigger, "On left stick - Y", "Gamepad", "On Left stick moved (Y) on {0} {1} {2}", "Kích hoạt left stick di chuyển Y", "OnLeftStickYMoved");
 // End: Left/Right Stick
 // End: support gamepads
 

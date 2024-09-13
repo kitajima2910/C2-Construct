@@ -37,6 +37,9 @@ cr.plugins_.PXH_COMMONS = function (runtime) {
 
     instanceProto.onCreate = function () {
         this.gamepads = [];
+        this.previousButtonStates = [];
+        this.lastLeftStickXValues = [];
+        this.lastLeftStickYValues = [];
         this.runtime.tickMe(this);
     };
 
@@ -66,10 +69,15 @@ cr.plugins_.PXH_COMMONS = function (runtime) {
             if (gamepads[i] && !this.gamepads[i]) {
                 // Gamepad mới được kết nối
                 this.gamepads[i] = this.createGamepadState(gamepads[i]);
+                this.previousButtonStates[i] = new Array(this.gamepads[i].buttons.length).fill(false);
+                this.lastLeftStickXValues[i] = 0;
+                this.lastLeftStickYValues[i] = 0;
                 this.runtime.trigger(cr.plugins_.PXH_COMMONS.prototype.cnds.OnGamepadConnected, this);
             } else if (!gamepads[i] && this.gamepads[i]) {
                 // Gamepad bị ngắt kết nối
                 this.gamepads[i] = null;
+                this.previousButtonStates[i] = null;
+                this.lastLeftStickXValues[i] = null;
                 this.runtime.trigger(cr.plugins_.PXH_COMMONS.prototype.cnds.OnGamepadDisconnected, this);
             }
 
@@ -79,9 +87,11 @@ cr.plugins_.PXH_COMMONS = function (runtime) {
 
                 // Kiểm tra các nút
                 for (var j = 0; j < this.gamepads[i].buttons.length; j++) {
-                    if (this.gamepads[i].buttons[j].pressed) {
+                    if (this.gamepads[i].buttons[j].pressed && !this.previousButtonStates[i][j]) {
                         this.runtime.trigger(cr.plugins_.PXH_COMMONS.prototype.cnds.OnButtonPressed, this);
                     }
+
+                    this.previousButtonStates[i][j] = this.gamepads[i].buttons[j].pressed;
                 }
 
                 // Left Stick (axes 0 và 1)
@@ -93,22 +103,38 @@ cr.plugins_.PXH_COMMONS = function (runtime) {
                 var rightStickY = this.gamepads[i].axes[3]; // Trục dọc của Right Stick
 
                 // Ví dụ kiểm tra xem có đang di chuyển Left Stick hay không
-                if (Math.abs(leftStickX) > 0.1 || Math.abs(leftStickY) > 0.1) {
-                    // console.log(`Gamepad ${i + 1} Left Stick:`, leftStickX, leftStickY);
+                if (Math.abs(leftStickX) > 0.5 || Math.abs(leftStickY) > 0.5) {
                     this.checkLeftStickXY = { x: leftStickX, y: leftStickY };
                     this.runtime.trigger(cr.plugins_.PXH_COMMONS.prototype.cnds.OnLeftStickMoved, this);
                 }
 
                 // Ví dụ kiểm tra xem có đang di chuyển Right Stick hay không
-                if (Math.abs(rightStickX) > 0.1 || Math.abs(rightStickY) > 0.1) {
-                    // console.log(`Gamepad ${i + 1} Right Stick:`, rightStickX, rightStickY);
+                if (Math.abs(rightStickX) > 0.5 || Math.abs(rightStickY) > 0.5) {
                     this.checkRightStickXY = { x: rightStickX, y: rightStickY };
                     this.runtime.trigger(cr.plugins_.PXH_COMMONS.prototype.cnds.OnRightStickMoved, this);
+                }
+
+                // Kiểm tra chuyển động của trục X của Left Stick
+                if (this.hasSignificantChange(leftStickX, this.lastLeftStickXValues[i])) {
+                    this.lastLeftStickXValues[i] = leftStickX;
+                    this.runtime.trigger(cr.plugins_.PXH_COMMONS.prototype.cnds.OnLeftStickXMoved, this);
+                }
+
+                // Kiểm tra chuyển động của trục Y của Left Stick
+                if (this.hasSignificantChange(leftStickY, this.lastLeftStickYValues[i])) {
+                    this.lastLeftStickYValues[i] = leftStickY;
+                    this.runtime.trigger(cr.plugins_.PXH_COMMONS.prototype.cnds.OnLeftStickYMoved, this);
                 }
             }
         }
     };
 
+    // Hàm kiểm tra xem có sự thay đổi đáng kể trong giá trị X, Y
+    instanceProto.hasSignificantChange = function (newX, previousX) {
+        var threshold = 0.5; // Ngưỡng để xác định sự thay đổi đáng kể
+        return Math.abs(newX - previousX) > threshold;
+    };
+    
     instanceProto.createGamepadState = function (gamepad) {
         return {
             index: gamepad.index,
@@ -127,8 +153,6 @@ cr.plugins_.PXH_COMMONS = function (runtime) {
     //////////////////////////////////////
     // Conditions
     function Cnds() { };
-
-    // ... add any other conditions here ...
 
     // Start: support gamepads
     Cnds.prototype.OnGamepadConnected = function () {
@@ -179,18 +203,47 @@ cr.plugins_.PXH_COMMONS = function (runtime) {
     };
 
     Cnds.prototype.OnLeftStickMoved = function (gamepadIndex) {
-        if (this.gamepads[gamepadIndex] !== null) {
-            return Math.abs(this.gamepads[gamepadIndex].axes[0]) > 0.1 || Math.abs(this.gamepads[gamepadIndex].axes[1]) > 0.1;
+        if (this.gamepads[gamepadIndex]) {
+            return Math.abs(this.gamepads[gamepadIndex].axes[0]) > 0.5 || Math.abs(this.gamepads[gamepadIndex].axes[1]) > 0.5;
         }
         return false;
     }
 
     Cnds.prototype.OnRightStickMoved = function (gamepadIndex) {
-        if (this.gamepads[gamepadIndex] !== null) {
-            return Math.abs(this.gamepads[gamepadIndex].axes[2]) > 0.1 || Math.abs(this.gamepads[gamepadIndex].axes[3]) > 0.1;
+        if (this.gamepads[gamepadIndex]) {
+            return Math.abs(this.gamepads[gamepadIndex].axes[2]) > 0.5 || Math.abs(this.gamepads[gamepadIndex].axes[3]) > 0.5;
         }
         return false;
     }
+
+    Cnds.prototype.OnLeftStickXMoved = function (gamepadIndex, comparison, X) {
+
+        if (this.gamepads[gamepadIndex]) {
+            var currentX = this.gamepads[gamepadIndex].axes[0];
+            switch (comparison) {
+                case 0: // Less than
+                    return currentX < -Math.abs(X);
+                case 1: // Greater than
+                    return currentX > Math.abs(X);
+            }
+        }
+        return false;
+    };
+
+
+    Cnds.prototype.OnLeftStickYMoved = function (gamepadIndex, comparison, Y) {
+
+        if (this.gamepads[gamepadIndex]) {
+            var currentY = this.gamepads[gamepadIndex].axes[1];
+            switch (comparison) {
+                case 0: // Less than (moving up)
+                    return currentY < -Math.abs(Y);
+                case 1: // Greater than (moving down)
+                    return currentY > Math.abs(Y);
+            }
+        }
+        return false;
+    };
     // End: support gamepads
 
     pluginProto.cnds = new Cnds();
@@ -199,15 +252,13 @@ cr.plugins_.PXH_COMMONS = function (runtime) {
     // Actions
     function Acts() { };
 
-    // ... add any other actions here ...
+
 
     pluginProto.acts = new Acts();
 
     //////////////////////////////////////
     // Expressions
     function Exps() { };
-
-    // ... add any other actions here ...
 
     // Start: support gamepads
     Exps.prototype.GamepadCount = function (ret) {
