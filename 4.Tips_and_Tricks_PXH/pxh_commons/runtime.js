@@ -40,6 +40,7 @@ cr.plugins_.PXH_COMMONS = function (runtime) {
         this.previousButtonStates = [];
         this.lastLeftStickXValues = [];
         this.lastLeftStickYValues = [];
+        this.buttonHoldTicks = [];
         this.runtime.tickMe(this);
     };
 
@@ -72,12 +73,14 @@ cr.plugins_.PXH_COMMONS = function (runtime) {
                 this.previousButtonStates[i] = new Array(this.gamepads[i].buttons.length).fill(false);
                 this.lastLeftStickXValues[i] = 0;
                 this.lastLeftStickYValues[i] = 0;
+                this.buttonHoldTicks[i] = new Array(this.gamepads[i].buttons.length).fill(0);
                 this.runtime.trigger(cr.plugins_.PXH_COMMONS.prototype.cnds.OnGamepadConnected, this);
             } else if (!gamepads[i] && this.gamepads[i]) {
                 // Gamepad bị ngắt kết nối
                 this.gamepads[i] = null;
                 this.previousButtonStates[i] = null;
                 this.lastLeftStickXValues[i] = null;
+                this.buttonHoldTicks[i] = null;
                 this.runtime.trigger(cr.plugins_.PXH_COMMONS.prototype.cnds.OnGamepadDisconnected, this);
             }
 
@@ -89,6 +92,20 @@ cr.plugins_.PXH_COMMONS = function (runtime) {
                 for (var j = 0; j < this.gamepads[i].buttons.length; j++) {
                     if (this.gamepads[i].buttons[j].pressed && !this.previousButtonStates[i][j]) {
                         this.runtime.trigger(cr.plugins_.PXH_COMMONS.prototype.cnds.OnButtonPressed, this);
+                    }
+
+                    // Check for button release
+                    if (!this.gamepads[i].buttons[j].pressed && this.previousButtonStates[i][j]) {
+                        this.runtime.trigger(cr.plugins_.PXH_COMMONS.prototype.cnds.OnButtonReleased, this);
+                    }
+
+                    // Update button hold ticks and trigger OnButtonHeld
+                    if (this.gamepads[i].buttons[j].pressed) {
+                        this.buttonHoldTicks[i][j]++;
+                        // Trigger OnButtonHeld for each pressed button
+                        this.runtime.trigger(cr.plugins_.PXH_COMMONS.prototype.cnds.OnButtonHeld, this);
+                    } else {
+                        this.buttonHoldTicks[i][j] = 0;
                     }
 
                     this.previousButtonStates[i][j] = this.gamepads[i].buttons[j].pressed;
@@ -134,7 +151,7 @@ cr.plugins_.PXH_COMMONS = function (runtime) {
         var threshold = 0.5; // Ngưỡng để xác định sự thay đổi đáng kể
         return Math.abs(newX - previousX) > threshold;
     };
-    
+
     instanceProto.createGamepadState = function (gamepad) {
         return {
             index: gamepad.index,
@@ -243,6 +260,54 @@ cr.plugins_.PXH_COMMONS = function (runtime) {
             }
         }
         return false;
+    };
+
+    Cnds.prototype.OnButtonHeld = function (buttonIndex, gamepadIndex) {
+        var buttonHeld = false;
+
+        var startIndex = (gamepadIndex === 0) ? 0 : gamepadIndex - 1;
+        var endIndex = (gamepadIndex === 0) ? this.gamepads.length : gamepadIndex;
+
+        for (var i = startIndex; i < endIndex; i++) {
+            if (this.gamepads[i] && this.buttonHoldTicks[i]) {
+                var startButton = (buttonIndex === 0) ? 0 : buttonIndex - 1;
+                var endButton = (buttonIndex === 0) ? this.gamepads[i].buttons.length : buttonIndex;
+
+                for (var j = startButton; j < endButton; j++) {
+                    if (this.gamepads[i].buttons[j] && this.gamepads[i].buttons[j].pressed) {
+                        buttonHeld = true;
+                        break;
+                    }
+                }
+                if (buttonHeld) break;
+            }
+        }
+
+        return buttonHeld;
+    };
+
+    Cnds.prototype.OnButtonReleased = function (buttonIndex, gamepadIndex) {
+        var buttonReleased = false;
+
+        var startIndex = (gamepadIndex === 0) ? 0 : gamepadIndex - 1;
+        var endIndex = (gamepadIndex === 0) ? this.gamepads.length : gamepadIndex;
+
+        for (var i = startIndex; i < endIndex; i++) {
+            if (this.gamepads[i] && this.previousButtonStates[i]) {
+                var startButton = (buttonIndex === 0) ? 0 : buttonIndex - 1;
+                var endButton = (buttonIndex === 0) ? this.gamepads[i].buttons.length : buttonIndex;
+
+                for (var j = startButton; j < endButton; j++) {
+                    if (!this.gamepads[i].buttons[j].pressed && this.previousButtonStates[i][j]) {
+                        buttonReleased = true;
+                        break;
+                    }
+                }
+                if (buttonReleased) break;
+            }
+        }
+
+        return buttonReleased;
     };
     // End: support gamepads
 

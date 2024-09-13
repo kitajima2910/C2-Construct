@@ -127,6 +127,42 @@ AddCondition(6, cf_trigger, "On left stick - Y", "Gamepad", "On Left stick moved
 // End: Left/Right Stick
 // End: support gamepads
 
+// Start: Buttons
+// Thêm combobox cho nút gamepad và index gamepad
+AddComboParamOption("Any");
+for (var i = 0; i < gamepadButtons.length; i++) {
+    AddComboParamOption(gamepadButtons[i]);
+}
+AddComboParam("Button", "Chọn nút gamepad", 0);
+
+AddComboParamOption("Any");
+for (var i = 0; i < gamepadIndices.length; i++) {
+    AddComboParamOption(gamepadIndices[i]);
+}
+AddComboParam("Gamepad", "Chọn gamepad", 0);
+
+// Cập nhật điều kiện "On button held"
+AddCondition(7, cf_trigger, "On button held", "Gamepad", "On {0} held on {1}", "Kích hoạt khi một nút được giữ", "OnButtonHeld");
+// End: Buttons
+
+// Start: Buttons
+// Thêm combobox cho nút gamepad và index gamepad
+AddComboParamOption("Any");
+for (var i = 0; i < gamepadButtons.length; i++) {
+    AddComboParamOption(gamepadButtons[i]);
+}
+AddComboParam("Button", "Chọn nút gamepad", 0);
+
+AddComboParamOption("Any");
+for (var i = 0; i < gamepadIndices.length; i++) {
+    AddComboParamOption(gamepadIndices[i]);
+}
+AddComboParam("Gamepad", "Chọn gamepad", 0);
+
+// Cập nhật điều kiện "On button held"
+AddCondition(8, cf_trigger, "On button released", "Gamepad", "On {0} released on {1}", "Kích hoạt khi một nút được thả", "OnButtonReleased");
+// End: Buttons
+
 ////////////////////////////////////////
 // Actions
 
