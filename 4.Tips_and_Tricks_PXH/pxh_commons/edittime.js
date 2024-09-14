@@ -163,6 +163,26 @@ AddComboParam("Gamepad", "Chọn gamepad", 0);
 AddCondition(8, cf_trigger, "On button released", "Gamepad", "On {0} released on {1}", "Kích hoạt khi một nút được thả", "OnButtonReleased");
 // End: Buttons
 
+for (var i = 0; i < gamepadIndices.length; i++) {
+    AddComboParamOption(gamepadIndices[i]);
+}
+AddComboParam("Gamepad", "Chọn gamepad", 0);
+AddComboParamOption("< (Trái)");
+AddComboParamOption("> (Phải)");
+AddComboParam("Dấu", "Chọn dấu", 0);
+AddNumberParam("Giá trị X", "X");
+AddCondition(9, cf_trigger, "On left stick - X (v2)", "Gamepad", "On Left stick moved (X) on {0} {1} {2} (v2)", "Kích hoạt left stick di chuyển X (v2)", "OnLeftStickXMoved_v2");
+
+for (var i = 0; i < gamepadIndices.length; i++) {
+    AddComboParamOption(gamepadIndices[i]);
+}
+AddComboParam("Gamepad", "Chọn gamepad", 0);
+AddComboParamOption("< (Lên)");
+AddComboParamOption("> (Xuống)");
+AddComboParam("Dấu", "Chọn dấu", 0);
+AddNumberParam("Giá trị Y", "Y");
+AddCondition(10, cf_trigger, "On left stick - Y (v2)", "Gamepad", "On Left stick moved (Y) on {0} {1} {2} (v2)", "Kích hoạt left stick di chuyển Y (v2)", "OnLeftStickYMoved_v2");
+
 ////////////////////////////////////////
 // Actions
 

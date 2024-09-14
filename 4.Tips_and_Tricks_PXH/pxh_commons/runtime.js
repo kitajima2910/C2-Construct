@@ -142,6 +142,15 @@ cr.plugins_.PXH_COMMONS = function (runtime) {
                     this.lastLeftStickYValues[i] = leftStickY;
                     this.runtime.trigger(cr.plugins_.PXH_COMMONS.prototype.cnds.OnLeftStickYMoved, this);
                 }
+
+                // Ví dụ kiểm tra xem có đang di chuyển Left Stick hay không
+                if (Math.abs(leftStickX) > 0.5) {
+                    this.runtime.trigger(cr.plugins_.PXH_COMMONS.prototype.cnds.OnLeftStickXMoved_v2, this);
+                }
+
+                if (Math.abs(leftStickY) > 0.5) {
+                    this.runtime.trigger(cr.plugins_.PXH_COMMONS.prototype.cnds.OnLeftStickYMoved_v2, this);
+                }
             }
         }
     };
@@ -308,6 +317,34 @@ cr.plugins_.PXH_COMMONS = function (runtime) {
         }
 
         return buttonReleased;
+    };
+
+    Cnds.prototype.OnLeftStickXMoved_v2 = function (gamepadIndex, comparison, X) {
+
+        if (this.gamepads[gamepadIndex]) {
+            var currentX = this.gamepads[gamepadIndex].axes[0];
+            switch (comparison) {
+                case 0: // Less than
+                    return currentX < -Math.abs(X);
+                case 1: // Greater than
+                    return currentX > Math.abs(X);
+            }
+        }
+        return false;
+    };
+
+    Cnds.prototype.OnLeftStickYMoved_v2 = function (gamepadIndex, comparison, Y) {
+
+        if (this.gamepads[gamepadIndex]) {
+            var currentY = this.gamepads[gamepadIndex].axes[1];
+            switch (comparison) {
+                case 0: // Less than (moving up)
+                    return currentY < -Math.abs(Y);
+                case 1: // Greater than (moving down)
+                    return currentY > Math.abs(Y);
+            }
+        }
+        return false;
     };
     // End: support gamepads
 
